@@ -29,13 +29,14 @@ def state():
 
 
 def fetchState():
-    return json.dumps({"is_active": str(is_open).lower()}), 200
+    return json.dumps({"is_active": str(is_open.value).lower()}), 200
 
 
 def record_loop():
     global is_open
     while True:
-        is_open = GPIO.input(door_sensor_pin) == 1
+        # Home Assistant treats "0" (off) as OPEN. So we invert it here
+        is_open.value = GPIO.input(door_sensor_pin) == 0
         time.sleep(0.5)
 
 
