@@ -27,14 +27,16 @@ def state():
 
 
 def fetchState():
+    print("!!!!!" + str(is_open))
     return json.dumps({"is_active": str(is_open).lower()}), 200
 
 
 def record_loop():
+    global is_open
     while True:
-        global is_open
-        is_open = GPIO.input(door_sensor_pin)
-        time.sleep(1)
+        is_open = GPIO.input(door_sensor_pin) == 1
+        print(is_open)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
