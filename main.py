@@ -1,10 +1,19 @@
+import time
 from flask import Flask
-from flask import request
 import json
+from multiprocessing import Process
+import RPi.GPIO as GPIO
+
+# The GPIO pin number we have assigned to the door sensor.
+door_sensor_pin = 12
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(door_sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 app = Flask(__name__)
 
 # Variables
-isOn = False
+is_open = False
+
 
 # App routes
 @app.route("/")
@@ -12,50 +21,24 @@ def index():
     return "It Works! Try interacting with /state instead"
 
 
-@app.route("/state", methods=['GET', 'POST'])
+@app.route("/state", methods=['GET'])
 def state():
-    if request.method == 'POST':
-        return setState()
-    elif request.method == "GET":
-        return fetchState()
+    return fetchState()
 
-# Helper Functions
-def setState():
-    c = request.json
-
-    if "active" not in c:
-        return "missing \"active\" field", 400
-
-    if c["active"] == "true":
-        if turnOn():
-            return "turned on", 200
-        else:
-            return "failed to turn on", 500
-
-    if c["active"] == "false":
-        if turnOff():
-            return "turned off", 200
-        else:
-            return "failed to turn off", 500
-
-    return "Invalid payload", 400
 
 def fetchState():
-    return json.dumps({"is_active": str(isOn).lower()}), 200
+    return json.dumps({"is_active": str(is_open).lower()}), 200
 
-def turnOn():
-    global isOn
-    isOn = True
 
-    # Implement this. Return False on any error
-    return True
+def record_loop():
+    while True:
+        global is_open
+        is_open = GPIO.input(door_sensor_pin)
+        time.sleep(1)
 
-def turnOff():
-    global isOn
-    isOn = False
-
-    # Implement this. Return False on any error
-    return True
 
 if __name__ == "__main__":
+    p = Process(target=record_loop)
+    p.start()
     app.run(host="0.0.0.0")
+    p.join()

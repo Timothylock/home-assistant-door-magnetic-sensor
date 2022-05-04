@@ -1,20 +1,9 @@
-# RESTful Raspberry Pi Switch Server for Home Assistant
-An example RESTful GPIO server that is compatible with Home Assistant. This repository aims to provide you with a template to create your own programs to connect to the [REST switch component](https://www.home-assistant.io/components/switch.rest/) of the Home Assistant
+# Home Assistant Door Magnetic Sensor
 
-# Quick Runthrough
-This server supports operations outlined in the [REST switch component](https://www.home-assistant.io/components/switch.rest/):
+Lets you connect an existing magnetic door sensor to Home Assistant. This server will
+constantly check the state of the door and make it available to query via an API that is
+compatible with Home Assistant.
 
-- Querying state 
-- Turning on
-- Turning off
-
-The functions that you should be concerned with are:
-
-- fetchState()
-- turnOn()
-- turnOff()
-
-Something you might do is to make it interact with a GPIO pin to control a physical device such as a relay. 
 
 # Requirements
 To develop this template on your computer, you need:
@@ -27,13 +16,15 @@ Setting it up on a fresh install of Raspbian is supported in the provided instal
 
 # Connect to Home Assistant
 Add this to the configuration file of your Home Assistant:
+
 ```yaml
-switch:
+binary_sensor:
   - platform: rest
-    resource: http://IP_ADDRESS/led_endpoint
-    body_on: '{"active": "true"}'
-    body_off: '{"active": "false"}'
-    is_on_template: '{{ value_json.is_active }}'
+    resource: http://IP_ADDRESS/state
+    name: Door
+    value_template: '{{ value_json.is_active }}'
     headers:
       Content-Type: application/json
     verify_ssl: true
+    device_class: door
+```
