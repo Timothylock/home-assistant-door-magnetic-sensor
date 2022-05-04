@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 from flask import Flask
 import json
@@ -12,7 +13,8 @@ GPIO.setup(door_sensor_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 app = Flask(__name__)
 
 # Variables
-is_open = False
+manager = multiprocessing.Manager()
+is_open = multiprocessing.Value('b', False)
 
 
 # App routes
@@ -27,7 +29,6 @@ def state():
 
 
 def fetchState():
-    print("!!!!!" + str(is_open))
     return json.dumps({"is_active": str(is_open).lower()}), 200
 
 
@@ -35,7 +36,6 @@ def record_loop():
     global is_open
     while True:
         is_open = GPIO.input(door_sensor_pin) == 1
-        print(is_open)
         time.sleep(0.5)
 
 
